@@ -1,0 +1,12 @@
+docs/_build/
+*.retry
+*.log
+*.py[cod]
+*.so
+*.iml
+.idea/
+.ansible/
+.DS_Store
+.swp
+inventories/
+hosts
