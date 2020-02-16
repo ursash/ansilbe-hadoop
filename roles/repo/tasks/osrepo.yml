@@ -1,0 +1,19 @@
+---
+# local
+- name: Add local repository
+  yum_repository:
+    name: localos
+    description: offline os repo
+    baseurl: http://{{ webserver }}/localos
+    gpgcheck: no
+    enabled: yes
+  when: local_os_repo is defined and local_os_repo == true
+  
+# remote
+- name: add remote repository
+  copy:
+    src: "{{ item }}"
+    dest: /etc/yum.repos.d/
+  with_items:
+    - "{{ ansible_distribution }}{{ ansible_distribution_major_version }}-Base-163.repo"
+  when: local_os_repo is not defined or local_os_repo == false

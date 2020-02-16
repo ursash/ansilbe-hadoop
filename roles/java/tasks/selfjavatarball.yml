@@ -1,0 +1,34 @@
+---
+- name: copy self-defined jdk
+  synchronize:
+    src: "{{ local_jdktar_path }}"
+    dest: "{{ tmp_dir }}/{{ local_jdktar_path | basename}}"
+
+- name: ensure java directory exists
+  file:
+    path: /usr/java
+    state: directory
+
+- name: extract jdk tarball
+  unarchive:
+    src: "{{ tmp_dir }}/{{ local_jdktar_path | basename}}"
+    dest: /usr/java
+    copy: no
+    owner: root
+    group: root
+    mode: 0755
+    list_files: yes
+  register: javahome
+
+- name: set java home
+  lineinfile:
+    path: /etc/profile
+    state: present
+    regexp: '^export JAVA_HOME'
+    line: "export JAVA_HOME=/usr/java/{{ javahome.files[0] }}"
+
+- name: add java home to path
+  lineinfile:
+    path: /etc/profile
+    state: present
+    line: "export PATH=$JAVA_HOME/bin:$PATH"

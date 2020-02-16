@@ -1,0 +1,23 @@
+---
+- name: Install MariaDB server packages
+  yum: 
+    name: 
+      - MariaDB-Galera-server
+      - MariaDB-client
+      - MySQL-python
+    state: present
+
+- name: Add mysql configuration
+  template: src=server.cnf.j2 dest=/etc/my.cnf.d/server.cnf owner=root group=root mode=0644
+
+- name: Create MariaDB log file
+  file: path={{ mysql_log }} state=touch owner=mysql group=mysql mode=0775
+
+- name: Create MariaDB PID directory
+  file: path={{ mysql_pid_dir }} state=directory owner=mysql group=mysql mode=0775
+
+- name: enable mariadb service
+  command: chkconfig mysql on
+
+- name: ensure mysql is started
+  command: 'service mysql start'

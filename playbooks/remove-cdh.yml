@@ -1,0 +1,202 @@
+---
+# do the following before run the playbook
+# Stop all services in CM
+# Deactivate and Remove Parcels
+# Delete the Cluster
+- name: Stop Cloudera Manager Server
+  hosts: cm
+  tasks:
+      - shell: service cloudera-scm-server stop
+        ignore_errors: yes
+
+# use hard stop because of supervisor
+- name: Stop Cloudera Manager Agent
+  hosts: cdh
+  tasks:
+      - shell: service cloudera-scm-agent next_stop_hard;service cloudera-scm-agent stop
+        ignore_errors: yes
+
+- name: remove Cloudera Manager package
+  hosts: cdh
+  tasks:
+      - yum:
+          name: "cloudera*"
+          state: absent
+          disable_gpg_check: yes
+
+- name: clean yum cache
+  hosts: cdh
+  tasks:
+      - shell: yum clean all
+
+- name: umount cm process
+  hosts: cdh
+  tasks:
+      - shell: umount cm_processes
+        ignore_errors: yes
+
+- name: uninstall packages
+  hosts: cdh
+  tasks:
+      - yum: 
+          name: "cloudera*"
+          state: absent
+
+- name: Remove Cloudera Manager Data
+  hosts: cdh
+  tasks:
+      - shell: rm -rf {{ item }}
+        with_items:
+          - /dfs
+          - /mapred
+          - /etc/cloudera*
+          - /etc/default/impala
+          - /etc/flume-ng
+          - /etc/hadoop
+          - /etc/hbase*
+          - /etc/hive*
+          - /etc/hue
+          - /etc/impala
+          - /etc/llama
+          - /etc/oozie
+          - /etc/pig
+          - /etc/solr
+          - /etc/spark
+          - /etc/sqoop*
+          - /etc/zookeeper
+          - /etc/alternatives/flume*
+          - /etc/alternatives/hadoop*
+          - /etc/alternatives/hbase*
+          - /etc/alternatives/hive*
+          - /etc/alternatives/hue*
+          - /etc/alternatives/impala*
+          - /etc/alternatives/llama*
+          - /etc/alternatives/oozie*
+          - /etc/alternatives/pig*
+          - /etc/alternatives/solr*
+          - /etc/alternatives/spark*
+          - /etc/alternatives/sqoop*
+          - /etc/alternatives/zookeeper*
+          - /home/training/backup_config
+          - /opt/cloudera/parcels/*
+          - /opt/cloudera/parcel-cache/*
+          - /tmp/*scm*
+          - /tmp/.*scm*
+          - /tmp/hadoop*
+          - /var/cache/yum/cloudera*
+          - /usr/lib/hadoop*
+          - /usr/lib/hive*
+          - /usr/lib/hue
+          - /usr/lib/oozie
+          - /usr/lib/parquet
+          - /usr/lib/spark
+          - /usr/lib/sqoop
+          - /usr/share/cmf
+          - /usr/share/hue
+          - /var/lib/cloudera*
+          - /var/lib/flume-ng
+          - /var/lib/hadoop*
+          - /var/lib/hdfs
+          - /var/lib/hive*
+          - /var/lib/hue
+          - /var/lib/impala
+          - /var/lib/oozie
+          - /var/lib/sqoop*
+          - /var/lib/spark
+          - /var/lib/solr
+          - /var/lib/zookeeper
+          - /var/lib/alternatives/flume*
+          - /var/lib/alternatives/hadoop*
+          - /var/lib/alternatives/hbase*
+          - /var/lib/alternatives/hive*
+          - /var/lib/alternatives/hue*
+          - /var/lib/alternatives/impala*
+          - /var/lib/alternatives/llama*
+          - /var/lib/alternatives/oozie*
+          - /var/lib/alternatives/pig*
+          - /var/lib/alternatives/solr*
+          - /var/lib/alternatives/spark*
+          - /var/lib/alternatives/sqoop*
+          - /var/lib/alternatives/zookeeper*
+          - /var/lock/subsys/cloudera*
+          - /var/lock/subsys/flume-ng*
+          - /var/lock/subsys/hadoop*
+          - /var/lock/subsys/hbase*
+          - /var/lock/subsys/hdfs*
+          - /var/lock/subsys/hive*
+          - /var/lock/subsys/hue*
+          - /var/lock/subsys/impala*
+          - /var/lock/subsys/llama*
+          - /var/lock/subsys/oozie*
+          - /var/lock/subsys/solr*
+          - /var/lock/subsys/spark*
+          - /var/lock/subsys/sqoop*
+          - /var/lock/subsys/zookeeper*
+          - /var/log/cloudera*
+          - /var/log/flume-ng
+          - /var/log/hadoop*
+          - /var/log/hbase*
+          - /var/log/hive*
+          - /var/log/hue
+          - /var/log/impala*
+          - /var/log/llama
+          - /var/log/oozie
+          - /var/log/solr
+          - /var/log/sqoop2
+          - /var/log/spark
+          - /var/log/zookeeper
+          - /var/run/cloudera*
+          - /var/run/flume-ng
+          - /var/run/hadoop*
+          - /var/run/hbase*
+          - /var/run/hdfs*
+          - /var/run/hive
+          - /var/run/impala
+          - /var/run/llama
+          - /var/run/oozie
+          - /var/run/solr
+          - /var/run/spark
+          - /var/run/sqoop2
+          - /var/run/zookeeper
+          - /yarn
+
+- name: Remove the Cloudera Manager Lock File
+  hosts: cdh
+  tasks:
+      - shell: rm /tmp/.scm_prepare_node.lock
+        ignore_errors: yes
+
+- name: Remove service users on all nodes
+  hosts: cdh
+  tasks:
+      - user:
+          state: absent
+          name: "{{ item }}"
+          remove: yes
+        with_items:
+          - accumulo
+          - cloudera-scm
+          - flume
+          - hbase
+          - hcat
+          - hdfs
+          - hive
+          - livy
+          - solr
+          - llama
+          - httpfs
+          - kms
+          - kafka
+          - mapred
+          - oozie
+          - spark
+          - sqoop
+          - sqoop2
+          - kudu
+          - sentry
+          - impala
+          - hue
+          - tez
+          - yarn
+          - zookeeper
+        ignore_errors: yes

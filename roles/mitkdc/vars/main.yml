@@ -1,0 +1,14 @@
+---
+kdc_packages:
+  - krb5-server
+  - krb5-libs
+  - krb5-workstation
+
+kdc_config_file: /var/kerberos/krb5kdc/kdc.conf
+kdc_acl_file: /var/kerberos/krb5kdc/kadm5.acl
+kdc_database_file: /var/kerberos/krb5kdc/principal
+
+krb5_kdc_master_passwd: Ab123456
+
+krb5_kdc_admin_user: "cloudera-scm/admin@{{ hostvars[groups['kdc'][0]]['default_realm'] | upper }}"
+krb5_kdc_admin_passwd: Ab123456

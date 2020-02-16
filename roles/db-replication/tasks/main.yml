@@ -1,0 +1,71 @@
+---
+- name: Include native variables.
+  include_vars: native.yml
+  when: database_type == 'native'
+
+- name: Include none native variables.
+  include_vars: non-native.yml
+  when: database_type != 'native'
+
+- name: set slave variables, current host is slave
+  set_fact: 
+    replication_slave: "{{ ansible_host }}"
+
+- name: set master variables, remote host is master
+  set_fact: 
+    replication_master: "{{ hostvars[groups['database'][1]]['ansible_default_ipv4']['address'] }}"
+  when: inventory_hostname == groups['database'][0]
+
+- name: set master variables, remote host is master
+  set_fact: 
+    replication_master: "{{ hostvars[groups['database'][0]]['ansible_default_ipv4']['address'] }}"
+  when: inventory_hostname == groups['database'][1]
+
+- name: ensure mysql is started
+  command: service {{ mysql_daemon }} start
+
+- name: Ensure replication user exists on remote master.
+  mysql_user:
+    login_user: root 
+    login_password: "{{ mysql_root_password }}"
+    name: "{{ replication_user }}"
+    host: "{{ replication_slave | default('%') }}"
+    password: "{{ replication_password }}"
+    update_password: always
+    priv: "*.*:REPLICATION SLAVE,REPLICATION CLIENT"
+    state: present
+  delegate_to: "{{ replication_master }}"
+  remote_user: root
+
+- name: Check current host slave replication status.
+  mysql_replication:
+    mode: getslave
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  register: slave
+
+- name: Check remote host master replication status.
+  mysql_replication: 
+    mode: getmaster
+    login_user: root 
+    login_password: "{{ mysql_root_password }}"
+  delegate_to: "{{ replication_master }}"
+  remote_user: root
+  register: master
+
+- name: Configure replication on the slave.
+  mysql_replication:
+    mode: changemaster
+    login_user: root 
+    login_password: "{{ mysql_root_password }}"
+    master_host: "{{ replication_master }}"
+    master_user: "{{ replication_user }}"
+    master_password: "{{ replication_password }}"
+    master_log_file: "{{ master.File }}"
+    master_log_pos: "{{ master.Position }}"
+  
+- name: Start replication.
+  mysql_replication: 
+    mode: startslave
+    login_user: root 
+    login_password: "{{ mysql_root_password }}"

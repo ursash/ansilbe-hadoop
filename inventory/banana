@@ -1,0 +1,39 @@
+[cm]
+# only one is allowed
+
+[master]
+banana-master-01.ruisdata.com ansible_host=10.24.68.90
+banana-master-02.ruisdata.com ansible_host=10.24.68.199
+banana-master-03.ruisdata.com ansible_host=10.24.68.200
+
+[worker]
+banana-worker-01.ruisdata.com ansible_host=10.24.67.98
+banana-worker-02.ruisdata.com ansible_host=10.24.67.139
+banana-worker-03.ruisdata.com ansible_host=10.24.67.99
+
+[edge]
+banana-edge-01.ruisdata.com ansible_host=10.24.66.96
+banana-edge-02.ruisdata.com ansible_host=10.24.66.97
+banana-edge-03.ruisdata.com ansible_host=10.24.66.98
+banana-edge-04.ruisdata.com ansible_host=10.24.66.99
+banana-edge-05.ruisdata.com ansible_host=10.24.68.210
+banana-cdsw-01.ruisdata.com ansible_host=10.24.65.25
+
+[database]
+# two servers for mysql ha and three servers for mariadb ha
+banana-master-01.ruisdata.com ansible_host=10.24.68.90
+banana-master-02.ruisdata.com ansible_host=10.24.68.199
+banana-master-03.ruisdata.com ansible_host=10.24.68.200
+
+[kdc]
+
+[cdh:children]
+master
+worker
+edge
+cm
+
+[all:vars]
+ansible_user=root
+ntpserver=cm.ruisdata.com
+webserver=10.24.68.91

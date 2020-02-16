@@ -1,0 +1,11 @@
+---
+- import_tasks: cm-java.yml
+  when: java_install_type == 'embed'
+
+- import_tasks: selfjavatarball.yml
+  when: java_install_type == 'tarball'
+
+- import_tasks: selfjavarpm.yml
+  when: java_install_type == 'rpm'
+
+- import_tasks: mysql-jdbc.yml

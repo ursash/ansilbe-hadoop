@@ -1,0 +1,30 @@
+---
+# backup all repo files
+- name: make backup dir
+  file: path=/etc/yum.repos.d/backup state=directory owner=root group=root
+
+- name: remove origin repo files
+  shell: rm -f  /etc/yum.repos.d/*.repo
+  args:
+    warn: false
+
+# set local os first if needed, only apply to webserver
+- import_tasks: localosrepo.yml
+  when: local_os_repo and inventory_hostname == webserver
+  
+# set os repo for all hosts
+- import_tasks: osrepo.yml
+
+# set web server as local database repo when using mariadb repo downloaded from https://mariadb.org/
+- import_tasks: localdbrepo.yml
+  when: local_db_repo  and database_type == 'mariadb' and inventory_hostname == webserver
+
+# set non-native db repo for all hosts
+- import_tasks: dbrepo.yml
+  when: database_type != 'native'
+
+# set web server as local cm and cdh repo
+- import_tasks: localcdhrepo.yml
+  when: local_cdh_repo and inventory_hostname == webserver
+
+- import_tasks: cdhrepo.yml

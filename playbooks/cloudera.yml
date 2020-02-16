@@ -1,0 +1,81 @@
+---
+# Cloudera playbook
+
+- name: assert host os is redhat or centos
+  hosts: all
+  tasks:
+    - assert:
+       that: "ansible_os_family == 'RedHat'"
+       msg: "only redhat and centos is supported"
+  tags: always
+
+- name: set repo files
+  hosts: all
+  roles:
+   - repo
+  tags: repo
+
+- name: common setting
+  hosts: all
+  roles:
+    - oscommon
+  tags: os
+
+- name: install database
+  hosts: database
+  roles:
+    - { role: mariadb, when: database_type == 'mariadb'}
+    - { role: nativedb, when: database_type == 'native'}
+    # - { role: mysql, when: database_type == 'mysql'}
+  tags: database
+
+- name: assert the number of hosts for database ha
+  hosts: database
+  tasks:
+    - assert:
+       that: "groups['database'] | length > 1"
+       msg: "should be three hosts for mariadb ha"
+      when: database_ha == 'galera'
+    - assert:
+       that: "groups['database'] | length == 2"
+       msg: "should be two hosts for db replication"
+      when: database_ha == 'replication'
+  tags: database_ha
+
+- name: set up database ha
+  hosts: database
+  serial: 1
+  roles:
+    - { role: mariadb-galera, when: (database_type == 'mariadb' and database_ha == 'galera')}
+    - { role: db-replication, when: (database_type == 'native' and database_ha == 'replication')}
+  tags: database_ha
+
+- name: set up java and mysql connector
+  hosts: cdh
+  roles:
+    - java
+  tags: java
+
+- name: Install Cloudera Manager Agents
+  hosts: cdh
+  roles:
+    - cm-agents
+  tags: cm_agents
+
+- name: Install Cloudera Manager Server
+  hosts: cm
+  roles:
+    - cm-server
+  tags: cm_server
+
+- name: install haproxy and keepalived
+  hosts: haproxy
+  roles:
+    - {role: haproxy, when: haproxy_enabled == true}
+    - {role: keepalived, when: keepalived_enabled == true}
+
+- name: Install MIT KDC Server
+  hosts: kdc
+  roles:
+    - { role: mitkdc, when: krb5_kdc_type == 'mit' }
+  tags: kdc

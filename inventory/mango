@@ -1,0 +1,37 @@
+[cm]
+# only one is allowed
+mango-master-01.ruisdata.com ansible_host=10.24.65.96
+
+[master]
+mango-master-01.ruisdata.com ansible_host=10.24.65.96
+mango-master-02.ruisdata.com ansible_host=10.24.68.218
+mango-master-03.ruisdata.com ansible_host=10.24.65.97
+
+[worker]
+
+[edge]
+
+[database]
+# two servers for mysql ha and three servers for mariadb ha
+# set server id for servers
+mango-master-01.ruisdata.com ansible_host=10.24.65.96 server_id=1 auto-increment-offset=1
+mango-master-02.ruisdata.com ansible_host=10.24.68.218 server_id=2 auto-increment-offset=2
+
+[kdc]
+
+[cdh:children]
+master
+worker
+edge
+cm
+
+[cdh:vars]
+
+[all:vars]
+ansible_user=root
+# only one server is allowed, marked by fqdn, uesd in common roles
+ntpserver=mango-master-01.ruisdata.com
+# http web server, used in the localrepo and repo roles, usefully when you need to install offline or internet download speed is constrained
+# use ip address because this var is used before host file is set
+# it should be one of the servers defined above
+# webserver=

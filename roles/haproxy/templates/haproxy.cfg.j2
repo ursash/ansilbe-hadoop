@@ -1,0 +1,105 @@
+# THIS FILE IS CONTROLLED BY ANSIBLE
+# any local modifications will be overwritten!
+#
+#---------------------------------------------------------------------
+# Global settings
+#---------------------------------------------------------------------
+global
+    log         127.0.0.1 local2
+    chroot      /var/lib/haproxy
+    pidfile     /var/run/haproxy.pid
+    maxconn     4000
+    user        haproxy
+    group       haproxy
+    daemon
+    # turn on stats unix socket
+    stats socket /var/lib/haproxy/stats
+#---------------------------------------------------------------------
+# common defaults that all the 'listen' and 'backend' sections will
+# use if not designated in their block
+#---------------------------------------------------------------------
+
+defaults
+    mode                    http
+    log                     global
+    option                  httplog
+    option                  dontlognull
+    #option http-server-close
+    #option forwardfor       except 127.0.0.0/8
+    option                  redispatch
+    retries                 3
+    timeout http-request    10s
+    timeout queue           1m
+    timeout connect         10s
+    timeout client          1m
+    timeout server          1m
+    timeout http-keep-alive 10s
+    timeout check           10s
+    maxconn                 3000
+
+# HAProxy的http状态管理界面
+listen stats
+    bind 0.0.0.0:1080
+    mode http
+    option httplog
+    maxconn 5000
+    stats refresh 30s
+    stats  uri /stats
+
+{% if groups['hiveserver2'] is defined %}
+listen  hiveserver2
+    bind 0.0.0.0:10010
+    mode    tcp
+    balance source
+    option  tcplog
+    timeout connect {{ haproxy_timeout }}
+    timeout client  {{ haproxy_timeout }}
+    timeout server  {{ haproxy_timeout }}
+{% for item in groups['hiveserver2'] %}
+    server {{ hostvars[item].inventory_hostname }} {{ hostvars[item].inventory_hostname }}:10000 inter 100 rise 2 fall 5 check
+{% endfor %}
+    retries 3
+{% endif %}
+
+{% if groups['impala'] is defined %}
+listen  impala
+    bind 0.0.0.0:21000
+    mode    tcp
+    balance roundrobin
+    option  tcplog
+    timeout connect {{ haproxy_timeout }}
+    timeout client  {{ haproxy_timeout }}
+    timeout server  {{ haproxy_timeout }}
+{% for item in groups['impala'] %}
+    server {{ hostvars[item].inventory_hostname }} {{ hostvars[item].inventory_hostname }}:21000 inter 100 rise 2 fall 5 check
+{% endfor %}
+    retries 3
+
+listen impalajdbc
+    bind 0.0.0.0:21050
+    mode tcp
+    option tcplog
+    balance roundrobin
+    timeout connect {{ haproxy_timeout }}
+    timeout client  {{ haproxy_timeout }}
+    timeout server  {{ haproxy_timeout }}
+{% for item in groups['impala'] %}
+    server {{ hostvars[item].inventory_hostname }} {{ hostvars[item].inventory_hostname }}:21050 inter 100 rise 2 fall 5 check
+{% endfor %}
+    retries 3
+{% endif %}
+
+{% if groups['solr'] is defined %}
+listen  solr
+    bind 0.0.0.0:18983
+    mode    tcp
+    balance roundrobin
+    option  tcplog
+    timeout connect {{ haproxy_timeout }}
+    timeout client  {{ haproxy_timeout }}
+    timeout server  {{ haproxy_timeout }}
+{% for item in groups['solr'] %}
+    server {{ hostvars[item].inventory_hostname }} {{ hostvars[item].inventory_hostname }}:8983 inter 100 rise 2 fall 5 check
+{% endfor %}
+    retries 3
+{% endif %}

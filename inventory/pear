@@ -1,0 +1,33 @@
+[cm]
+# only one is allowed
+
+[master]
+pear-master-01.ruisdata.com ansible_host=10.24.67.105
+pear-master-02.ruisdata.com ansible_host=10.24.67.106
+pear-master-03.ruisdata.com ansible_host=10.24.66.231
+
+[worker]
+
+[edge]
+pear-edge-01.ruisdata.com ansible_host=10.24.67.108
+pear-edge-02.ruisdata.com ansible_host=10.24.66.232
+pear-edge-03.ruisdata.com ansible_host=10.24.68.141
+
+[database]
+# two servers for mysql ha and three servers for mariadb ha
+pear-master-01.ruisdata.com ansible_host=10.24.67.105
+
+[kdc]
+
+[cdh:children]
+master
+worker
+edge
+cm
+
+[cm:vars]
+# cm_database_host=
+
+[all:vars]
+ansible_user=root
+ntpserver=pear-master-01.ruisdata.com

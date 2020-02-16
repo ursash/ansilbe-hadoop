@@ -1,0 +1,38 @@
+---
+- name: Install packages for MariaDB server HA
+  yum: name={{ item }} state=present
+  with_items:
+    - percona-xtrabackup-24
+    - socat
+  when: database_ha == 'galera'
+
+- name: ensure mysql is started
+  command: service mysql start
+
+- name: Add Galera SST user
+  mysql_user: 
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+    name: "{{ galera_sst_user }}"
+    host: "{{ item }}"
+    password: "{{ galera_sst_pass }}"
+    priv: "*.*:ALL" 
+    append_privs: yes
+  with_items:
+    - "localhost"
+
+- name: Add galera configuration
+  template: src=galera.cnf.j2 dest=/etc/my.cnf.d/galera.cnf owner=root group=root mode=0644
+
+- name: stop mysql server
+  command: service mysql stop
+
+- name: init galera cluster
+  command: /etc/init.d/mysql start --wsrep-new-cluster
+  when: inventory_hostname == groups['database'][0]
+
+- name: restart other nodes
+  command: service mysql restart
+  when: inventory_hostname in groups['database'][1:]
+
+

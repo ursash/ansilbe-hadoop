@@ -1,0 +1,19 @@
+---
+- name: stop mysql
+  hosts: database
+  tasks:
+    - command: service mysql stop
+    - command: service mariadb stop
+  ignore_errors: True
+
+- name: clean all
+  hosts: all
+  tasks:
+    - command: "{{ item }}"
+      with_items:
+        - "yum remove Maria* -y"
+        - "yum remove mariadb* -y"
+        - "rm -rf /etc/my.cnf*"
+        - "rm -rf /var/lib/mysql/"
+        - "rm -rf /var/lock/subsys/mysql"
+  ignore_errors: True

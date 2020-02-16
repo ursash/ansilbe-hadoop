@@ -1,0 +1,13 @@
+---
+# whether to set local cdh repo
+local_cdh_repo: false
+# cmtarpath is a tar.gz file
+cmtarpath: '/root/cm5.14.3-centos7.tar.gz'
+# parcelpath is a dir
+cdhparcelpath: '/root/parcels'
+
+# set cm host
+scm_hostname: "{{ hostvars[groups['cm'][0]]['inventory_hostname']  }}"
+scm_port: 7180
+scm_default_user: admin
+scm_default_pass: admin

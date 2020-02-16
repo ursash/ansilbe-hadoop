@@ -1,0 +1,7 @@
+---
+galera_sst_user: sst
+galera_sst_pass: admin
+galera_cluster_interface: ens192
+galera_cluster_interface_fact_var: ansible_{{ galera_cluster_interface }}
+galera_wsrep_cluster_name: ansible_galera_cluster
+galera_server_id: 1337

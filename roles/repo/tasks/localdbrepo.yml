@@ -1,0 +1,23 @@
+---
+- name: Install http
+  yum: 
+    name:
+      - httpd
+      - rsync
+    state: present
+
+- name: http service state
+  service: name=httpd state=started enabled=yes
+
+- name: copy db repo file
+  synchronize:
+    src: "{{ dbrepopath }}/"
+    dest: /var/www/html/mariadb
+
+- name: change owner and group of file to ansible_ssh_usr
+  file:
+    path: /var/www/html/
+    owner: "{{ ansible_ssh_user }}"
+    group: "{{ ansible_ssh_user }}"
+    mode: 0755
+    recurse: yes

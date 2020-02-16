@@ -1,0 +1,8 @@
+---
+# install database
+- import_tasks: install.yml
+# mysql secure setting
+- import_tasks: mysql_secure_installation.yml
+# create related databses
+- import_tasks: create_database.yml
+  when: cdh_databases is defined

@@ -1,0 +1,29 @@
+---
+# local_db_repo is true means using offline mariadb repo downloaded from https://mariadb.org/ 
+- name: Add local database repository
+  yum_repository:
+    name: local_mariadb
+    description: offline mariadb repo
+    baseurl: http://{{ webserver }}/mariadb
+    gpgcheck: no
+    enabled: yes
+  when: local_db_repo == true and database_type == 'mariadb' 
+
+# remote db repo
+- name: Add remote database repository
+  yum_repository:
+    name: MariaDB
+    description: MariaDB 10.0 CentOS repository list
+    baseurl: "{{ remote_db_url }}"
+    gpgcheck: no
+    enabled: yes
+  when: local_db_repo == false and database_type == 'mariadb'
+
+- name: Add remote percona repository
+  yum_repository:
+    name: CentOS_Percona
+    description: percona
+    baseurl: http://repo.percona.com/centos/$releasever/os/$basearch/
+    gpgcheck: no
+    enabled: yes
+  when: local_db_repo == false and database_type == 'mariadb' and database_ha == 'galera'

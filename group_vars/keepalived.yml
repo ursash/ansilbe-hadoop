@@ -1,0 +1,3 @@
+---
+keepalived_bind_interface: eth0
+virtual_router_id: 61

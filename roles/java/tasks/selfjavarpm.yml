@@ -1,0 +1,10 @@
+---
+- name: copy self-defined jdk
+  synchronize:
+    src: "{{ local_jdkrpm_path }}"
+    dest: "{{ tmp_dir }}/{{ local_jdkrpm_path | basename}}"
+
+- name: extract jdk tarball
+  yum:
+    name: "{{ tmp_dir }}/{{ local_jdktar_path | basename}}"
+    state: present

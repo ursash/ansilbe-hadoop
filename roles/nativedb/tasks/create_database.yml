@@ -1,0 +1,24 @@
+---
+- name: ensure mysql is started
+  command: systemctl start mariadb
+
+- name: Create cdh_databases
+  mysql_db: 
+    login_user: root 
+    login_password: "{{ mysql_root_password }}"
+    name: "{{ item.value.name }}"
+    state: present
+    encoding: utf8
+  with_dict: "{{ cdh_databases }}"
+
+- name: Create database users
+  mysql_user: 
+    login_user: root 
+    login_password: "{{ mysql_root_password }}"
+    name: "{{ item.value.user }}"
+    password: "{{ item.value.pass }}" 
+    update_password: always
+    priv: "{{ item.value.name }}.*:ALL"
+    host: '%' 
+    state: present
+  with_dict: "{{ cdh_databases }}"

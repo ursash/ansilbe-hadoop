@@ -1,0 +1,3 @@
+---
+remote_cm_url: "http://archive.cloudera.com/cm5/redhat/7/x86_64/cm/5/"
+remote_db_url: "http://yum.mariadb.org/10.0/centos7-amd64"

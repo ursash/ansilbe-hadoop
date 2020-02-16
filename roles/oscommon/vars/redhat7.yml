@@ -1,0 +1,23 @@
+---
+packages:
+  - vim
+  - telnet
+  - openssh-clients
+  - ntp
+  - unzip
+  - curl
+  - wget
+  - rsync
+  - openssh-server
+  - rng-tools
+  - tar
+
+epel_rpm_url: "http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm"
+
+epel_yum: "epel-release"
+
+resolv_conf: "/etc/resolv.conf"
+
+networking_path: "/etc/sysconfig/network-scripts"
+
+update_grub_command: 'grub2-mkconfig -o "$(readlink -n /etc/grub2.cfg)"'

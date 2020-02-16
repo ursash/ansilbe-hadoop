@@ -1,0 +1,11 @@
+---
+- name: Restart krb5
+  service:
+    name: krb5kdc
+    state: restarted
+  notify: Restart kadmin
+
+- name: Restart kadmin
+  service:
+    name: kadmin
+    state: restarted

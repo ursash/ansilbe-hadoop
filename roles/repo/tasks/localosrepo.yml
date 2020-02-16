@@ -1,0 +1,64 @@
+---
+- assert:
+    that: "ansible_os_family == 'RedHat'"
+    msg: "only redhat and centos is supported"
+
+# ansible server and target server is not necessarily the same server,copy file to remote dir
+- name: copy os file
+  copy:
+    src: "{{ ospath }}"
+    dest: "{{ tmp_dir }}/{{ ospath | basename}}"
+
+- name: Make mount folder
+  file: path=/mnt/cdrom state=directory owner=root group=root
+
+- name: mount os iso
+  mount:
+    name: "{{ mountpoint }}"
+    src: "{{ tmp_dir }}/{{ ospath | basename}}"
+    fstype: iso9660
+    opts: loop,ro
+    state: mounted
+
+- name: set mount file as repo
+  yum_repository:
+        name: local
+        description: Local DVD repository
+        baseurl: "file://{{ mountpoint }}"
+        enabled: yes
+        gpgcheck: no
+  notify:
+    - yum-clean-metadata
+
+- name: "stop firewalld"
+  service: name=firewalld state=stopped enabled=no
+
+- name: "Disable SELinux"
+  selinux: state=disabled
+
+# ensure  httpd is installed
+- name: Install common dependencies
+  yum: 
+    name: ['httpd', 'rsync', 'openssh-clients'] 
+    state: installed
+
+- name: http service state
+  service: name=httpd state=started enabled=yes
+
+- name: copy file to /var/www/html to make it available on web
+  command: rsync -az "{{ mountpoint }}/" /var/www/html/localos
+
+- name: change owner and group of file to ansible_ssh_usr
+  file:
+    path: /var/www/html/
+    owner: "{{ ansible_ssh_user }}"
+    group: "{{ ansible_ssh_user }}"
+    mode: 0755
+    recurse: yes
+
+# remove local repo and cleaning up metadata cache, use http repo later
+- name: Remove repository (and clean up left-over metadata)
+  yum_repository:
+    name: local
+    state: absent
+  notify: yum-clean-metadata

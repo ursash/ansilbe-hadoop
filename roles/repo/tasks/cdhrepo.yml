@@ -1,0 +1,20 @@
+---
+# local
+- name: Add local CM yum repository
+  yum_repository:
+    name: local-cloudera-manager
+    description: Local Cloudera Manager
+    baseurl: http://{{ webserver }}/cm/5
+    gpgcheck: no
+    enabled: yes
+  when: local_cdh_repo == true
+
+# remote
+- name: Add Cloudera Manager yum repository
+  yum_repository:
+    name: cloudera-manager
+    description: Cloudera Manager
+    baseurl: "{{ remote_cm_url }}"
+    gpgcheck: no
+    enabled: yes
+  when:  local_cdh_repo == false

@@ -1,0 +1,29 @@
+---
+- name: install database
+  hosts: database
+  roles:
+    - { role: mariadb, when: database_type == 'mariadb'}
+    - { role: nativedb, when: database_type == 'native'}
+    # - { role: mysql, when: database_type == 'mysql'}
+  tags: database
+
+- name: assert the number of hosts for database ha
+  hosts: database
+  tasks:
+    - assert:
+       that: "groups['database'] | length > 1"
+       msg: "should be three hosts for mariadb ha"
+      when: database_ha == 'galera'
+    - assert:
+       that: "groups['database'] | length == 2"
+       msg: "should be two hosts for db replication"
+      when: database_ha == 'replication'
+  tags: database_ha
+
+- name: set up database ha
+  hosts: database
+  serial: 1
+  roles:
+    - { role: mariadb-galera, when: (database_type == 'mariadb' and database_ha == 'galera')}
+    - { role: db-replication, when: (database_type == 'native' and database_ha == 'replication')}
+  tags: database_ha

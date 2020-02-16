@@ -1,0 +1,3 @@
+---
+replication_user: backup
+replication_password: admin

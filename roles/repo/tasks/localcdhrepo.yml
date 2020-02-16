@@ -1,0 +1,38 @@
+---
+- name: Install http
+  yum: 
+    name: ['httpd', 'rsync', 'unzip'] 
+    state: present
+
+- name: http service state
+  service: name=httpd state=started enabled=yes
+
+- name: copy cm files
+  synchronize:
+    src: "{{ cmtarpath }}"
+    dest: "{{ tmp_dir }}/{{ cmtarpath | basename}}"
+
+- name: copy parcel files
+  synchronize:
+    src: "{{ cdhparcelpath }}"
+    dest: /var/www/html/
+
+- name: extract cm tar.gz 
+  unarchive:
+    src: "{{ tmp_dir }}/{{ cmtarpath | basename}}"
+    dest: /var/www/html
+    copy: no
+
+- name: change owner and group of file to ansible_ssh_usr
+  file:
+    path: /var/www/html/
+    owner: "{{ ansible_ssh_user }}"
+    group: "{{ ansible_ssh_user }}"
+    mode: 0755
+    recurse: yes
+
+- name: clean tmp file
+  file:
+    path: "{{ tmp_dir }}/{{ cmtarpath | basename}}"
+    state: absent
+

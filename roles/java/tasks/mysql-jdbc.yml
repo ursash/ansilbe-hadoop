@@ -1,0 +1,16 @@
+---
+- name: make sure remote directory exists
+  file: 
+     path: /usr/share/java 
+     state: directory
+
+- name: set mysql java connector
+  copy:
+    src: "{{ mysqljdbc }}"
+    dest: /usr/share/java/
+
+- name: make symlink
+  file:
+    src: "{{ mysqljdbc }}"
+    dest: /usr/share/java/mysql-connector-java.jar
+    state: link

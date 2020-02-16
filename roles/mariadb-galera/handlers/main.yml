@@ -1,0 +1,9 @@
+---
+- name: start mariadb
+  command: service mysql start
+
+- name: restart mariadb
+  command: service mysql restart
+
+- name: stop mariadb
+  command: service mysql stop

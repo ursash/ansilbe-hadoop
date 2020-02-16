@@ -1,0 +1,17 @@
+---
+- name: Install HAProxy
+  yum:
+    name: haproxy
+    state: present
+    disable_gpg_check: yes
+
+- name: copy haproxy.cfg
+  template:
+    src: haproxy.cfg.j2
+    dest: /etc/haproxy/haproxy.cfg
+
+- name: auto start HAProxy
+  service:
+    name: haproxy
+    state: started
+    enabled: yes

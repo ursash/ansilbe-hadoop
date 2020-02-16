@@ -1,0 +1,63 @@
+---
+# ansible related setting
+ansible_become: true
+tmp_dir: /tmp
+
+# choose kdc type, 'freeipa', 'mit', or 'none'
+krb5_kdc_type: mit
+default_realm: ruisdata.com
+
+# remote ntp server, separated by comma
+remotentp: ['ntp1.aliyun.com', 'ntp2.aliyun.com', 'ntp3.aliyun.com', 'ntp4.aliyun.com']
+
+# whether to set local linux OS repo
+local_os_repo: false
+# ospath is path of an iso file on the server running the script
+#ospath: '/root/CentOS-7-x86_64-DVD-1708.iso'
+ospath: '/Users/shihao/Archive/ISO image/CentOS-7-x86_64-DVD-1804.iso'
+
+# mount point mount iso to certain path on remote Linux
+mountpoint: '/mnt/cdrom'
+
+# database host, use the first one to config cm
+db_hostname: "{{ hostvars[groups['database'][0]]['inventory_hostname'] }}"
+
+# database related setting, type is mariadb, mysql or native.
+# type mariadb will use opensource mariadb repo from https://mariadb.org/
+# type mysql will use opensource mariadb repo from https://www.mysql.com
+# type native will use mariadb contained in Linux(CentOS) native OS
+database_type: 'native'
+
+# database ha setting, type is galera, replication or none
+# with galera, only database_type mariadb is supported, not recommended, do not use galera for CDH!!!!
+database_ha: 'replication'
+
+# version of database
+# for mariadb, currently only version 10.0 is supported
+# the version will be used in the repo file template
+database_version: '10.0.0'
+
+# whether to set and use self-defined mariadb database repo
+# set it to false when using Linux OS native mariadb
+local_db_repo: false
+# dbpath is a dir contains all the repo file downloaded from https://mariadb.org/
+# dbrepopath: '/root/mariadb-centos7-10.0'
+dbrepopath: '/Users/shihao/Archive/mariadb/centos7-amd64-10.0'
+
+# java_install_type can be set to embed, rpm, tarball or none
+# embed will install JDK7 from cm repo and instll jce from roles/java/files/
+# rpm will install rpm which will set $PATH automatically
+# tarball will use extrace tarball without set $PATH
+# ensure java is installed if java_install_type is set to none
+# set it to false if you want to use customized java
+java_install_type: none
+# use basenamme of local_jdktar_path as directory name such as /usr/java/jdk1.8.0_162
+local_jdktar_path: '/Users/shihao/Software/JDK/jdk8/jdk-8u162-linux-x64.tar.gz'
+# java will be installed in /usr/java/
+local_jdkrpm_path: '/Users/shihao/Archive/JDK/jdk8/jdk-8u162-linux-x64.rpm'
+# mysql connector version this file is put in roles/java/files
+mysqljdbc: 'mysql-connector-java-5.1.31-bin.jar'
+
+# haproxy and keepalived
+haproxy_enabled: false
+keepalived_enabled: true

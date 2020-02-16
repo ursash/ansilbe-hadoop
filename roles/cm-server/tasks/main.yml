@@ -1,0 +1,36 @@
+---
+- name: Install the Cloudera Manager Server Packages
+  yum: name={{ item }} state=installed
+  with_items:
+    - cloudera-manager-daemons
+    - cloudera-manager-server
+    - cloudera-manager-agent
+
+# user cm_database or the first host in database group as default
+- name: Prepare Cloudera Manager Server External Database
+  command: /usr/share/cmf/schema/scm_prepare_database.sh
+             -f
+             --host {{ hostvars[groups['database'][0]]['inventory_hostname'] }}
+             mysql {{ cdh_databases.scm.name }} {{ cdh_databases.scm.user }} {{ cdh_databases.scm.pass }}
+  changed_when: False
+
+- name: copy csd files
+  copy:
+    src: "{{ item }}"
+    dest: /opt/cloudera/csd
+    owner: cloudera-scm
+    group: cloudera-scm
+    mode: 0644
+  with_fileglob:
+    - "csd/*.jar"  
+
+- name: Start the Cloudera Manager Server
+  service: name={{ item }} state=restarted enabled=yes
+  notify:
+    - wait cloudera-scm-server
+  with_items:
+    - cloudera-scm-server
+    - cloudera-scm-agent
+
+# Trigger handler to wait for SCM to startup
+- meta: flush_handlers

@@ -1,0 +1,34 @@
+# THIS FILE IS CONTROLLED BY ANSIBLE
+# any local modifications will be overwritten!
+#
+! Configuration File for keepalived
+global_defs {
+   router_id LVS_1
+}
+
+vrrp_script check_mysql {
+    script "/etc/keepalived/check_mysql.sh"
+    interval 2
+}
+
+vrrp_instance VI_1 {
+    state BACKUP
+    interface {{ keepalived_bind_interface }}
+    virtual_router_id {{ virtual_router_id }}
+    priority {{ keepalived_priority }} 
+    advert_int 1
+    nopreempt
+    authentication {
+        auth_type PASS
+        auth_pass 1111
+    }
+    virtual_ipaddress {
+         {{ hostvars[groups['virtual_ipaddress'][0]].ansible_host }}
+    }
+    track_scipt {
+        check_mysql
+    }
+    notify_master /etc/keepalived/master.sh
+    notify_backup /etc/keepalived/backup.sh
+    notify_stop /etc/keepalived/backup.sh
+}

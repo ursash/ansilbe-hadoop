@@ -1,0 +1,35 @@
+---
+- include_vars: ../../../group_vars/keepalived.yml
+- name: Install Keepalived
+  yum:
+    name: keepalived
+
+- name: copy mysql status check scripts and haproxy status scripts
+  copy:
+    src: "{{ item }}"
+    dest: "/etc/keepalived/{{ item }}"
+    mode: 0755
+  with_items:
+    - check_mysql.sh
+    - master.sh
+    - backup.sh
+
+- name: set crontab for mysql status check scripts
+  cron:
+    name: check mysql
+    job: "bash /etc/keepalived/check_mysql.sh"
+
+- name: copy keepalived.conf
+  template:
+    src: keepalived.conf.j2
+    dest: /etc/keepalived/keepalived.conf
+
+- name: restart Keepalived
+  service:
+    name: keepalived
+    state: restarted 
+
+- name: auto start Keepalived
+  service:
+    name: keepalived
+    enabled: yes
